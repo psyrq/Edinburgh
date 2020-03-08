@@ -22,22 +22,20 @@ public class Network {
 	private Map<Node, String> msgToDeliver; //Integer for the id of the sender and String for the message
 
 	private Map<Integer, ArrayList<Node>> elections;
-	private ArrayList<Integer> failures;
+	private Map<Integer, Integer> failures;
 
-	public void NetSimulator(String[] args) {
+	private void NetSimulator(String[] args) {
 
 		msgToDeliver = new HashMap<>();
 		nodes = new ArrayList<>();
 		elections = new HashMap<>();
-		failures = new ArrayList<>();
+		failures = new HashMap<>();
 
 		parseFile(args[0], args[1]);
-//		parseFile("ds_graph.txt", "ds_elect.txt");
-//		parseFile("ds_graph.txt", "ds_fail.txt");
 
 		getNeighbours();
 
-		while(round < 50) {
+		while(round <= 250) {
 			System.out.println("#####  round: " + round + " #####");
 			Set<Integer> keyset = elections.keySet();
 
@@ -54,7 +52,7 @@ public class Network {
 
 			deliverMessages();
 
-			if (failures.contains(round)) {
+			if (failures.containsKey(round)) {
 
 				Iterator<Node> iter = nodes.iterator();
 
@@ -62,16 +60,16 @@ public class Network {
 
 					Node node = iter.next();
 
-					if (node.getNodeId() == failures.get(0)) {
+					if (node.getNodeId() == failures.get(round)) {
 
 						System.out.println("Node " + node.getNodeId() + " has failed");
-						for (Node n : node.myNeighbours) {
-							n.myNeighbours.remove(node);
+						for (Node n : node.getNeighbors()) {
+							n.deleteNeighbour(node);
 						}
 
-						findPath(node.rightNode, node.leftNode);
+						findNewPath(node.getRightNode(), node.getLeftNode());
 						if (node.isNodeLeader()) {
-							System.out.println("Node " + node.getNodeId() + " is leader");
+							System.out.println("Current leader: " + node.getNodeId() + " Node " + node.getNodeId() + " has failed");
 							System.out.println("A new election will be held next round by the node closest to the " +
 									"failure");
 							ArrayList<Node> temp = new ArrayList<>();
@@ -85,7 +83,7 @@ public class Network {
 					}
 				}
 
-				failures.remove(0);
+				failures.remove(round);
 				getNeighbours();
 			}
 
@@ -126,11 +124,13 @@ public class Network {
 				System.out.println("add node: " + node.getNodeId());
 				System.out.print("temp neighbours for node " + node.getNodeId() + ": ");
 
+				ArrayList<Integer> tempNeighbours = new ArrayList<>();
 				for (int i = 1; i < parts.length; i++) {
 					int neighbour = Integer.parseInt(parts[i]);
-					node.tempNeighbours.add(neighbour);
+					tempNeighbours.add(neighbour);
 					System.out.print(neighbour + " ");
 				}
+				node.setTempNeighbours(tempNeighbours);
 				System.out.println();
 			}
 
@@ -155,17 +155,19 @@ public class Network {
 
 				// failures
 				else if(parts[0].equals("FAIL")) {
-					int failNode = Integer.parseInt(parts[1]);
-					failures.add(failNode);
+					int failRound = Integer.parseInt(parts[1]);
+					int failNode = Integer.parseInt(parts[2]);
+					failures.put(failRound, failNode);
 				}
 			}
 
 			// populate neighbours
 			for (Node node1 : nodes) {
 				for (Node node2 : nodes) {
-					for (int i = 0; i < node1.tempNeighbours.size(); i++) {
-						if (node1.tempNeighbours.get(i) == node2.getNodeId()) {
-							node1.myNeighbours.add(node2);
+					for (int i = 0; i < node1.getTempNeighbours().size(); i++) {
+						if (node1.getTempNeighbours().get(i) == node2.getNodeId()) {
+//							node1.myNeighbours.add(node2);
+							node1.addNeighbour(node2);
 						}
 					}
 				}
@@ -176,7 +178,7 @@ public class Network {
 		}
 	}
 	
-	public synchronized void addMessage() {
+	private synchronized void addMessage() {
 		/*
 		At each round, the network collects all the messages that the nodes want to send to their neighbours. 
 		Implement this logic here.
@@ -191,7 +193,7 @@ public class Network {
 		}
 	}
 	
-	public synchronized void deliverMessages() {
+	private synchronized void deliverMessages() {
 		/*
 		At each round, the network delivers all the messages that it has collected from the nodes.
 		Implement this logic here.
@@ -212,41 +214,36 @@ public class Network {
 		*/
 	}
 
-//	public boolean isNumeric(String str) {
-//		Pattern pattern = Pattern.compile("[0-9]*");
-//		return pattern.matcher(str).matches();
-//	}
-
-	public synchronized void getNeighbours() {
+	private synchronized void getNeighbours() {
 
 		for (int i = 0; i < nodes.size(); i++) {
 			if (i == nodes.size() - 1) {
-				nodes.get(i).leftNode = nodes.get(0);
+				nodes.get(i).setLeftNode(nodes.get(0));
 			} else {
-				nodes.get(i).leftNode = nodes.get(i + 1);
+				nodes.get(i).setLeftNode(nodes.get(i + 1));
 			}
 		}
 
 		for (int i = 0; i < nodes.size(); i++) {
 			if (i == 0) {
-				nodes.get(i).rightNode = nodes.get(nodes.size() - 1);
+				nodes.get(i).setRightNode(nodes.get(nodes.size() - 1));
 			} else {
-				nodes.get(i).rightNode = nodes.get(i - 1);
+				nodes.get(i).setRightNode(nodes.get(i - 1));
 			}
 		}
 	}
 
-	public synchronized void findPath(Node s, Node f) {
+	private synchronized void findNewPath(Node start, Node finish) {
 
 		Queue<Node> queue = new LinkedList<>();
-		queue.add(s);
+		queue.add(start);
 		while (!queue.isEmpty()) {
 			Node n = queue.remove();
-			if (n.myNeighbours.contains(f)) {
-				System.out.println("New route found from " + s.getNodeId() + " to " + f.getNodeId() + "via node " + n.getNodeId());
+			if (n.getNeighbors().contains(finish)) {
+				System.out.println("New route found from " + start.getNodeId() + " to " + finish.getNodeId() + "via node " + n.getNodeId());
 				queue.clear();
 			} else {
-				queue.addAll(n.myNeighbours);
+				queue.addAll(n.getNeighbors());
 			}
 		}
 	}

@@ -11,55 +11,27 @@ public class Node extends Thread {
 	private boolean participant = false;
 	private boolean leader = false;
 
-	private Network network;
-
 	private final Object lockObj = new Object();
 
-	public ArrayList<Integer> tempNeighbours;
+	private ArrayList<Integer> tempNeighbours;
 	
 	// Neighbouring nodes
-	public ArrayList<Node> myNeighbours;
+	private ArrayList<Node> myNeighbours;
 
 	// Queues for the incoming and outgoing messages
-	public ArrayList<String> incomingMsg;
-	public ArrayList<String> outgoingMsg;
+	private ArrayList<String> incomingMsg;
+	ArrayList<String> outgoingMsg;
 
-	public Node leftNode;
-	public Node rightNode;
+	private Node leftNode;
+	private Node rightNode;
 
-	BufferedWriter bw;
+	private BufferedWriter bw;
 
 	private String logFile = "log.txt";
 	
-	public Node(int id) {
+	Node(int id) {
 	
 		this.id = id;
-
-		myNeighbours = new ArrayList<>();
-		tempNeighbours = new ArrayList<>();
-
-		incomingMsg = new ArrayList<>();
-		outgoingMsg = new ArrayList<>();
-
-		leftNode = null;
-		rightNode = null;
-
-		File log = new File(logFile);
-
-		try {
-			if (log.exists()) {
-				log.delete();
-			}
-			log.createNewFile();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-	}
-
-	public Node(int id, Network network) {
-
-		this.id = id;
-		this.network = network;
 
 		myNeighbours = new ArrayList<>();
 		tempNeighbours = new ArrayList<>();
@@ -120,6 +92,14 @@ public class Node extends Thread {
 		this.rightNode = rightNode;
 	}
 
+	public ArrayList<Integer> getTempNeighbours() {
+		return tempNeighbours;
+	}
+
+	public void setTempNeighbours(ArrayList<Integer> tempNeighbours) {
+		this.tempNeighbours = tempNeighbours;
+	}
+
 	public int getNodeId() {
 		/*
 		Method to get the Id of a node instance
@@ -148,15 +128,22 @@ public class Node extends Thread {
 		myNeighbours.add(n);
 	}
 
-	public ArrayList<String> getIncomingMsg() {
+	public void deleteNeighbour(Node n) {
+		/*
+		Method to remove a neighbour from a node
+		*/
+		myNeighbours.remove(n);
+	}
+
+	private ArrayList<String> getIncomingMsg() {
 		return incomingMsg;
 	}
 
-	public ArrayList<String> getOutgoingMsg() {
+	ArrayList<String> getOutgoingMsg() {
 		return outgoingMsg;
 	}
 
-	public synchronized void receiveMsg(String m) {
+	synchronized void receiveMsg(String m) {
 		/*
 		Method that implements the reception of an incoming message by a node
 		*/
