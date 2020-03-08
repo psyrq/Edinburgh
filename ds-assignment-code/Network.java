@@ -42,7 +42,7 @@ public class Network {
 			if (keyset.contains(round)) {
 				ArrayList<Node> starters = elections.get(round);
 				for (Node starter : starters) {
-					starter.outgoingMsg.add("election " + starter.getNodeId());
+					starter.addOutgoingMsg("election " + starter.getNodeId());
 					System.out.println("Node " + starter.getNodeId() + " start an election");
 				}
 				elections.remove(round);
@@ -76,7 +76,7 @@ public class Network {
 							temp.add(node.getLeftNode());
 							elections.put(round+1, temp);
 						} else {
-							System.out.println("Node " + node.getNodeId() + " is not leader");
+							System.out.println("Current node " + node.getNodeId() + " has failed");
 							System.out.println("Reconstruct network");
 						}
 						iter.remove();
@@ -240,7 +240,7 @@ public class Network {
 		while (!queue.isEmpty()) {
 			Node n = queue.remove();
 			if (n.getNeighbors().contains(finish)) {
-				System.out.println("New route found from " + start.getNodeId() + " to " + finish.getNodeId() + "via node " + n.getNodeId());
+				System.out.println("New route found from " + start.getNodeId() + " to " + finish.getNodeId() + " via node " + n.getNodeId());
 				queue.clear();
 			} else {
 				queue.addAll(n.getNeighbors());

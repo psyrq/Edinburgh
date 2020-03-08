@@ -20,7 +20,7 @@ public class Node extends Thread {
 
 	// Queues for the incoming and outgoing messages
 	private ArrayList<String> incomingMsg;
-	ArrayList<String> outgoingMsg;
+	private ArrayList<String> outgoingMsg;
 
 	private Node leftNode;
 	private Node rightNode;
@@ -29,7 +29,7 @@ public class Node extends Thread {
 
 	private String logFile = "log.txt";
 	
-	Node(int id) {
+	public Node(int id) {
 	
 		this.id = id;
 
@@ -135,15 +135,23 @@ public class Node extends Thread {
 		myNeighbours.remove(n);
 	}
 
-	private ArrayList<String> getIncomingMsg() {
+	public ArrayList<String> getIncomingMsg() {
 		return incomingMsg;
 	}
 
-	ArrayList<String> getOutgoingMsg() {
+	public ArrayList<String> getOutgoingMsg() {
 		return outgoingMsg;
 	}
 
-	synchronized void receiveMsg(String m) {
+	public void addIncomingMsg(String incomingMsg) {
+		this.incomingMsg.add(incomingMsg);
+	}
+
+	public void addOutgoingMsg(String outgoingMsg) {
+		this.outgoingMsg.add(outgoingMsg);
+	}
+
+	public synchronized void receiveMsg(String m) {
 		/*
 		Method that implements the reception of an incoming message by a node
 		*/
