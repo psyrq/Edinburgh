@@ -1,0 +1,42 @@
+LookAt 3 4 3
+		.5 .5 0
+		0 0 1
+Camera "perspective" "float fov" 45
+
+#Sampler "poissondisk" "integer numPoints" [100]
+Sampler "relaxedpoissondisk" "integer numPoints" [100]
+#Sampler "halton" "integer pixelsamples" [100]
+
+Integrator "path" "integer maxdepth" [5]
+Film "image" "string filename" "results/simple.png"
+	"integer xresolution" [400] "integer yresolution" [400]
+
+WorldBegin
+
+
+AttributeBegin
+	AreaLightSource "diffuse" "rgb L" [ 500.0 500.0 500.0 ]
+	Translate 3 0 5
+	Shape "sphere" "float radius" [.30]
+AttributeEnd
+
+AttributeBegin
+	Material "anisotropicPhong" "rgb Rd" [ 0.1 0.1 0.1 ] "rgb Rs" [0.1 0.1 0.1] "float nv" [10000.0] "float nu" [10000.0]
+	Shape "sphere" "float radius" 1
+AttributeEnd
+
+AttributeBegin
+	Texture "checks" "spectrum" "checkerboard"
+	"float uscale" [45] "float vscale" [45]
+	"rgb tex1" [.01 .01 .01] "rgb tex2" [.8 .8 .8]
+	Material "matte" "texture Kd" "checks"
+	Translate 0 0 -1
+	Shape "trianglemesh"
+		"integer indices" [0 1 2 0 2 3]
+		"point P" [ -20 -20 0 20 -20 0 20 20 0 -20 20 0 ]
+		"float st" [ 0 0 1 0 1 1 0 1 ]
+AttributeEnd
+
+WorldEnd
+
+
