@@ -25,6 +25,8 @@ public class Node extends Thread {
 	private Node leftNode;
 	private Node rightNode;
 
+	private boolean endElection = false;
+
 	private BufferedWriter bw;
 
 	private String logFile = "log.txt";
@@ -75,6 +77,13 @@ public class Node extends Thread {
 	
 	// Basic methods for the Node class
 
+	public boolean isEndElection() {
+		return endElection;
+	}
+
+	public void setEndElection(boolean endElection) {
+		this.endElection = endElection;
+	}
 
 	public Node getLeftNode() {
 		return leftNode;
@@ -148,35 +157,35 @@ public class Node extends Thread {
 	}
 
 	public void addOutgoingMsg(String outgoingMsg) {
-		this.outgoingMsg.add(outgoingMsg);
+		sendMsg(outgoingMsg);
 	}
 
 	public synchronized void receiveMsg(String m) {
 		/*
 		Method that implements the reception of an incoming message by a node
 		*/
+
 		if (m.startsWith("election")) {
 			int senderID = Integer.parseInt(m.substring(9));
-//			System.out.println("the sender id is: " + senderID);
 
 			if (senderID > getNodeId()) {
 				outgoingMsg.add(m);
-				participant = true;
+				this.participant = true;
 			}
 
-			else if (senderID < getNodeId() && !participant) {
-				participant = true;
-				outgoingMsg.add("election " + getNodeId());
+			else if (senderID < getNodeId() && !this.participant) {
+				this.participant = true;
+				this.outgoingMsg.add("election " + getNodeId());
 			}
 
-			else if (senderID == getNodeId() && participant) {
-				leader = true;
-				participant = false;
+			else if (senderID == getNodeId() && this.participant) {
+				this.leader = true;
+				this.participant = false;
 				System.out.println("Node " + this.id + " has become leader");
-				outgoingMsg.add("leader " + this.id);
+				this.outgoingMsg.add("leader is node " + this.id);
 				try {
 					bw = new BufferedWriter(new FileWriter(logFile, true));
-					bw.write("leader " + this.id);
+					bw.write("Leader " + this.id);
 					bw.newLine();
 					bw.flush();
 				} catch (IOException ioe) {
@@ -186,13 +195,18 @@ public class Node extends Thread {
 		}
 
 		else if (m.startsWith("leader")) {
-			int senderID = Integer.parseInt(m.substring(7));
+			int senderID = Integer.parseInt(m.substring(15));
 			if (senderID != this.id) {
 				this.participant = false;
-				outgoingMsg.add(m);
+				this.outgoingMsg.add(m);
 				System.out.println("Node " + senderID + " is leader");
+			} else {
+				this.incomingMsg.remove(m);
+				this.endElection = true;
 			}
 		}
+
+//		System.out.println();
 	}
 		
 	public void sendMsg(String m) {
@@ -202,11 +216,10 @@ public class Node extends Thread {
 		This method need only implement the logic of the network receiving an outgoing message from a node.
 		The remainder of the logic will be implemented in the network class.
 		*/
-		if (!participant) {
-			participant = true;
+		if (!this.participant) {
+			this.participant = true;
 		}
 		this.outgoingMsg.add(m);
-		System.out.println("message added to outgoing for node " + this.id);
 	}
 	
 }

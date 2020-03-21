@@ -1,3 +1,4 @@
+import javax.sound.midi.SysexMessage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,7 +36,8 @@ public class Network {
 
 		getNeighbours();
 
-		while(round <= 250) {
+		while (true) {
+
 			System.out.println("#####  round: " + round + " #####");
 			Set<Integer> keyset = elections.keySet();
 
@@ -69,12 +71,13 @@ public class Network {
 
 						findNewPath(node.getRightNode(), node.getLeftNode());
 						if (node.isNodeLeader()) {
-							System.out.println("Current leader: " + node.getNodeId() + " Node " + node.getNodeId() + " has failed");
+							System.out.println("Current leader, Node " + node.getNodeId() + " has failed");
 							System.out.println("A new election will be held next round by the node closest to the " +
 									"failure");
+							node.setEndElection(false);
 							ArrayList<Node> temp = new ArrayList<>();
 							temp.add(node.getLeftNode());
-							elections.put(round+1, temp);
+							elections.put(round + 1, temp);
 						} else {
 							System.out.println("Current node " + node.getNodeId() + " has failed");
 							System.out.println("Reconstruct network");
@@ -94,7 +97,11 @@ public class Network {
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt();
 			}
+
+			if (finishElections() && failures.isEmpty()) break;
 		}
+
+		System.out.println("simulation completed");
 
 		/*
 		Code to call methods for parsing the input file, initiating the system and producing the log can be added here.
@@ -166,7 +173,6 @@ public class Network {
 				for (Node node2 : nodes) {
 					for (int i = 0; i < node1.getTempNeighbours().size(); i++) {
 						if (node1.getTempNeighbours().get(i) == node2.getNodeId()) {
-//							node1.myNeighbours.add(node2);
 							node1.addNeighbour(node2);
 						}
 					}
@@ -231,6 +237,8 @@ public class Network {
 				nodes.get(i).setRightNode(nodes.get(i - 1));
 			}
 		}
+
+		System.out.println("new ring network constructed");
 	}
 
 	private synchronized void findNewPath(Node start, Node finish) {
@@ -247,6 +255,34 @@ public class Network {
 			}
 		}
 	}
+
+	private boolean finishElections() {
+		for (Node node : nodes) {
+			if (node.isEndElection()) return true;
+		}
+		return false;
+	}
+
+//	private synchronized void printElections() {
+//
+//		if (elections.isEmpty()) return;
+//
+//		Set<Integer> keyset = elections.keySet();
+//		System.out.println("start printing election map");
+//
+//		for (Integer key : keyset) {
+//
+//			System.out.println("round: " + key);
+//			ArrayList<Node> nodes = elections.get(key);
+//
+//			System.out.print("Nodes: ");
+//			for (Node node : nodes) {
+//				System.out.print(node.getNodeId() + " ");
+//			}
+//			System.out.println();
+//		}
+//		System.out.println("end printing election map");
+//	}
 
 	public static void main(String[] args) {
 		/*
