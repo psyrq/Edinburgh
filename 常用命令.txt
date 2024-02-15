@@ -1,0 +1,60 @@
+屏幕伤害/治疗字体
+/console floatingCombatTextCombatDamage 1 (伤害数字 1开启 0关闭)
+/console floatingCombatTextCombatHealing 1 (治疗数字 1开启 0关闭)
+
+宠物伤害字体
+/console floatingCombatTextPetMeleeDamage 1
+1代表开启，改成0代表关闭。这条作用于宠物的普通攻击伤害，也就是白字。
+/console floatingCombatTextPetSpellDamage 1
+这条代表宠物的技能伤害
+
+字体大小
+/console WorldTextScale 1.5
+
+鼠标指向，非指向性技能（暴风雪，火雨，最终清算等范围技能）
+#showtooltip 技能名
+/cast [@cursor] 技能名
+
+鼠标指向宏（技能名字改成 比如 自由祝福 保护祝福 圣光闪现 等等）
+#showtooltip 技能名
+/cast [target=mouseover,help][target=target,help,exists][target=player] 技能名
+
+焦点宏（技能名字焦点打断改成 责难 焦点制裁改成 制裁之锤）
+#showtooltip 技能名
+/cast [target=focus] 技能名
+
+技能取消宏（技能名字改成 保护祝福 圣盾术 自由祝福 等等）
+#showtooltips 技能名
+/cancelaura 技能名字
+
+伤害字体跳动距离
+/console floatingCombatTextCombatDamageDirectionalScale 0
+或者后面数字0也可以改为 1~5
+
+自定义延迟
+/console SpellQueueWindow 400 （400为上限与游戏默认值）
+
+查询垂直间距数值：
+/dump GetCVar("nameplateOverlapV")
+
+系统默认值：
+水平：/run SetCVar("nameplateOverlapH", 0.8)
+垂直：/run SetCVar("nameplateOverlapV", 1.5)
+
+装备对比开关宏
+/run SetCVar("alwaysCompareItems", "0") （1开启 0关闭）
+
+视角
+/console cameraDistanceMaxZoomFactor 2.6 （39码）
+/console cameraDistanceMaxZoomFactor 2.0 （30码-默认）
+/run print(GetCameraZoom()) （检测距离）
+
+血条显示
+/run SetCVar ('nameplateOtherTopInset', '0.15')
+/run SetCVar ('nameplateLargeTopInset', '0.15')
+
+背包排序正反向
+/run SetSortBagsRightToLeft(true) 或者/run SetSortBagsRightToLeft(false)
+
+小地图大小调节
+/run Minimap:SetScale(0.7)
